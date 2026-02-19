@@ -321,17 +321,19 @@ section[data-testid="stSidebar"] > div { padding: 1.5rem 1.2rem; }
 .info-tooltip {
     display: none;
     position: absolute; bottom: calc(100% + 10px); right: 0;
-    width: 280px;
+    width: 380px;
     background: #0A1830;
     border: 1px solid rgba(0,212,255,0.25);
     border-radius: 12px;
-    padding: 0.85rem 1rem;
+    padding: 1rem 1.1rem;
     font-family: 'Inter', sans-serif;
-    font-size: 0.75rem; font-weight: 400;
-    color: #8FBDD3; line-height: 1.6;
+    font-size: 0.74rem; font-weight: 400;
+    color: #8FBDD3; line-height: 1.7;
     box-shadow: 0 -8px 36px rgba(0,0,0,0.55);
     z-index: 99999;
     pointer-events: auto;
+    max-height: 420px;
+    overflow-y: auto;
 }
 .info-tooltip.visible {
     display: block;
@@ -927,6 +929,177 @@ def info_icon(title: str, body: str) -> str:
     )
 
 
+# ── Analyst-style report generators (reads like a marine biologist's report) ──
+
+def explain_bar(R):
+    b, a, s, h = R["bleach"], R["algae"], R["sediment"], R["health"]
+
+    # --- Bleaching interpretation ---
+    if b > 40:
+        bleach_txt = (f"Coral bleaching has reached a <b style='color:#90CAF9'>critical {b:.1f}%</b>. "
+                      f"This level indicates mass thermal stress — the coral polyps have expelled their symbiotic algae and are at high risk of mortality if conditions do not improve within weeks.")
+    elif b > 20:
+        bleach_txt = (f"Bleaching is at a <b style='color:#90CAF9'>concerning {b:.1f}%</b>. "
+                      f"A significant portion of the reef structure is under stress. Prolonged exposure to the current conditions will likely push this into a critical range.")
+    elif b > 8:
+        bleach_txt = (f"Mild bleaching detected at <b style='color:#90CAF9'>{b:.1f}%</b>. "
+                      f"While not immediately alarming, this is an early warning that temperature or water quality stress is present.")
+    else:
+        bleach_txt = (f"Bleaching is minimal at <b style='color:#90CAF9'>{b:.1f}%</b> — "
+                      f"coral polyps appear largely healthy and pigmented.")
+
+    # --- Algae interpretation ---
+    if a > 40:
+        algae_txt = (f"Algae bloom coverage at <b style='color:#69F0AE'>{a:.1f}%</b> is aggressive. "
+                     f"Dense algae is actively competing with and smothering coral tissue, blocking sunlight and consuming oxygen in the water column.")
+    elif a > 20:
+        algae_txt = (f"Algae at <b style='color:#69F0AE'>{a:.1f}%</b> is moderate-to-high. "
+                     f"Nutrient enrichment (often from runoff) is likely fuelling this growth. Left unchecked it will outcompete coral for space.")
+    elif a > 8:
+        algae_txt = (f"Algae presence is low-moderate at <b style='color:#69F0AE'>{a:.1f}%</b>. "
+                     f"This is within a manageable range but should be monitored for upward trends.")
+    else:
+        algae_txt = (f"Algae is well-controlled at <b style='color:#69F0AE'>{a:.1f}%</b> — "
+                     f"a healthy grazer fish population is likely keeping growth in check.")
+
+    # --- Sediment interpretation ---
+    if s > 30:
+        sediment_txt = (f"Sediment turbidity is <b style='color:#FFCC80'>very high at {s:.1f}%</b>. "
+                        f"This level drastically reduces light penetration, suffocates coral polyps, and signals significant erosion or disturbance upstream.")
+    elif s > 15:
+        sediment_txt = (f"Sediment at <b style='color:#FFCC80'>{s:.1f}%</b> is elevated. "
+                        f"Visibility is being reduced and coral growth rates are likely suppressed. Investigate for nearby construction, dredging, or storm runoff.")
+    else:
+        sediment_txt = (f"Sediment levels are low at <b style='color:#FFCC80'>{s:.1f}%</b> — "
+                        f"water clarity appears good, supporting adequate light for photosynthesis.")
+
+    # --- Overall verdict ---
+    if h >= 65:
+        verdict = f"<b style='color:#27AE60'>Overall the reef is in good health ({h:.1f}%).</b> Stressor levels are within acceptable bounds. Routine monitoring is sufficient."
+    elif h >= 35:
+        verdict = f"<b style='color:#F4D03F'>Overall health is moderate ({h:.1f}%).</b> The combination of stressors above is having a measurable impact. A targeted conservation plan is recommended."
+    else:
+        verdict = f"<b style='color:#C0392B'>Overall health is critically low ({h:.1f}%).</b> Multiple stressors are compounding each other. Immediate scientific assessment and intervention are strongly advised."
+
+    return f"{bleach_txt}<br><br>{algae_txt}<br><br>{sediment_txt}<br><br>{verdict}"
+
+
+def explain_donut(R):
+    b, a, s, h = R["bleach"], R["algae"], R["sediment"], R["health"]
+    total_stress = b + a + s
+
+    if h >= 65:
+        composition_txt = (
+            f"The composition chart confirms a predominantly healthy reef ecosystem. "
+            f"<b style='color:#00D4FF'>{h:.1f}%</b> of the image represents unimpacted, healthy water and coral — "
+            f"the dominant slice by a clear margin. The remaining {total_stress:.1f}% split across stressors "
+            f"is within the natural variation expected in a functioning reef system."
+        )
+        action = "Continue regular monitoring. No urgent intervention required."
+    elif h >= 35:
+        composition_txt = (
+            f"The donut reveals a reef under measurable stress. Healthy water accounts for only "
+            f"<b style='color:#00D4FF'>{h:.1f}%</b> of the composition, while combined stressors "
+            f"(bleaching {b:.1f}% + algae {a:.1f}% + sediment {s:.1f}%) consume <b>{total_stress:.1f}%</b> — "
+            f"more than a third of the ecosystem is compromised. The balance is shifting away from coral dominance."
+        )
+        action = "Localised intervention, water quality testing, and increased monitoring frequency are recommended."
+    else:
+        composition_txt = (
+            f"The composition tells a stark story: stressors account for <b style='color:#C0392B'>{total_stress:.1f}%</b> "
+            f"of the ecosystem while healthy water has collapsed to just <b style='color:#00D4FF'>{h:.1f}%</b>. "
+            f"This inversion — where damage outweighs health — is a hallmark of a reef in ecological crisis. "
+            f"Bleaching ({b:.1f}%), algae ({a:.1f}%), and sediment ({s:.1f}%) are all contributing to a cascading decline."
+        )
+        action = "Urgent scientific assessment and active restoration (coral transplanting, algae removal, runoff control) are critically needed."
+
+    return f"{composition_txt}<br><br>⚡ <b>Recommended Action:</b> {action}"
+
+
+def explain_gauge(R):
+    h = R["health"]
+
+    if h >= 75:
+        reading = (
+            f"The gauge needle sits firmly in the <b style='color:#27AE60'>Good zone at {h:.1f}%</b>. "
+            f"This score reflects a reef where ecological processes are functioning well — "
+            f"coral growth is outpacing mortality, grazers are controlling algae, and water quality is supporting photosynthesis. "
+            f"Reefs in this range show strong resilience and can recover from minor disturbances on their own."
+        )
+        outlook = "Outlook is positive. Maintain current water quality and minimise human disturbance to preserve this score."
+    elif h >= 50:
+        reading = (
+            f"The needle falls in the <b style='color:#F4D03F'>Fair zone at {h:.1f}%</b>. "
+            f"The reef is functional but showing signs of strain. At this score, coral recruitment may be slowing, "
+            f"and the ecosystem's ability to self-repair after bleaching events or storms is reduced. "
+            f"It is not in crisis, but it is trending in the wrong direction if stressors are not addressed."
+        )
+        outlook = "Outlook is cautious. Water quality management and reduction of local stressors (fishing pressure, runoff) are needed to prevent further decline."
+    elif h >= 25:
+        reading = (
+            f"The needle points to the <b style='color:#E67E22'>Poor zone at {h:.1f}%</b>. "
+            f"This score indicates significant ecological degradation. Coral cover is likely declining, "
+            f"algae is gaining dominance, and biodiversity is shrinking. The reef's natural recovery mechanisms "
+            f"are overwhelmed — passive conservation alone will not be sufficient."
+        )
+        outlook = "Outlook is concerning. Active intervention — including coral nursery programs, algae removal, and strict no-take zones — should be implemented urgently."
+    else:
+        reading = (
+            f"The needle has dropped into the <b style='color:#C0392B'>Critical zone at {h:.1f}%</b>. "
+            f"This represents near-total ecological collapse in the scanned area. "
+            f"At this level, coral framework destruction is advanced, biodiversity has crashed, "
+            f"and natural recovery without direct human intervention is considered unlikely within any reasonable timeframe."
+        )
+        outlook = "Outlook is severe. Emergency reef restoration protocols should be activated. Document the site for scientific record and prioritise stabilisation."
+
+    return f"{reading}<br><br>🔭 <b>Outlook:</b> {outlook}"
+
+
+def explain_recovery(R):
+    h = R["health"]
+    boost = h / 100.0
+
+    if h >= 65:
+        trajectory = (
+            f"With a health score of <b style='color:#00D4FF'>{h:.1f}%</b>, the simulation projects a <b>strong recovery trajectory</b>. "
+            f"The solid lines (boosted path) rise noticeably above the dashed baseline across all three ecosystems — "
+            f"Coral Reef, Seagrass Meadow, and Mangrove Forest. This gap represents the real-world benefit "
+            f"of maintaining current health levels. Coral Reef recovery is projected to approach near-full levels "
+            f"within 30–40 months under these conditions."
+        )
+        recommendation = (
+            f"The reef has strong natural recovery capacity. Protecting this site from new stressors "
+            f"(overfishing, pollution, anchor damage) will allow the projected recovery to materialise."
+        )
+    elif h >= 35:
+        trajectory = (
+            f"At <b style='color:#00D4FF'>{h:.1f}%</b> health, the simulation shows a <b>moderate recovery gap</b> "
+            f"between the dashed baseline and solid boosted lines. Recovery is possible, but it will be slower "
+            f"and more fragile than a healthy reef. The Mangrove Forest curve in particular shows limited uplift "
+            f"at this health level — mangroves require stable, low-stress conditions to regenerate effectively. "
+            f"Without improvement, the solid lines may converge back toward the baseline within 20–30 months."
+        )
+        recommendation = (
+            f"Active support is needed to widen the recovery gap — water quality improvement, "
+            f"reducing sedimentation, and supplementing natural recruitment with coral transplanting."
+        )
+    else:
+        trajectory = (
+            f"At a critically low health score of <b style='color:#00D4FF'>{h:.1f}%</b>, the simulation paints a difficult picture. "
+            f"The gap between the dashed baseline and solid lines is very narrow — meaning the ecosystem has "
+            f"little capacity to recover beyond its already-degraded baseline. All three ecosystems "
+            f"(Coral Reef, Seagrass, Mangrove) show suppressed recovery curves, and full recovery "
+            f"within the 50-month window is unlikely without major external intervention."
+        )
+        recommendation = (
+            f"Natural recovery alone is insufficient at this health level. "
+            f"Structured restoration programmes — coral seeding, nutrient runoff control, and enforced marine protection — "
+            f"are required to shift the trajectory upward."
+        )
+
+    return f"{trajectory}<br><br>📋 <b>Recommendation:</b> {recommendation}"
+
+
 # ── helper to render one full image report ────────────────────────────────
 def render_report(uf, pil_image, R, idx):
     """Render the full analysis report for a single image."""
@@ -1002,7 +1175,7 @@ def render_report(uf, pil_image, R, idx):
           </div>
         </div>""", unsafe_allow_html=True)
     with col_bar:
-        st.markdown("""
+        st.markdown(f"""
         <div class="chart-panel">
           <div class="chart-panel-header">
             <span class="chart-panel-title">📊 &nbsp;Pollution &amp; Health Coverage</span>
@@ -1011,8 +1184,8 @@ def render_report(uf, pil_image, R, idx):
               <div class="info-wrap">
                 <div class="info-icon">i</div>
                 <div class="info-tooltip">
-                  <strong>📊 Pollution &amp; Health Coverage</strong>
-                  Shows what percentage of pixels in your image were classified into each category. <b style="color:#90CAF9">Blue</b> = Coral Bleaching (bright/white pixels), <b style="color:#69F0AE">Green</b> = Algae Bloom (green-dominant), <b style="color:#FFCC80">Amber</b> = Sediment (brown/turbid), <b style="color:#00D4FF">Cyan</b> = Marine Health. A tall cyan bar is a good sign.
+                  <strong>📊 Coverage Analysis</strong>
+                  {explain_bar(R)}
                 </div>
               </div>
             </div>
@@ -1029,7 +1202,7 @@ def render_report(uf, pil_image, R, idx):
     section_head("03 · Composition & Health Gauge")
     col_donut, col_gauge = st.columns([1, 1], gap="large")
     with col_donut:
-        st.markdown("""
+        st.markdown(f"""
         <div class="chart-panel">
           <div class="chart-panel-header">
             <span class="chart-panel-title">🥧 &nbsp;Ecosystem Composition</span>
@@ -1039,7 +1212,7 @@ def render_report(uf, pil_image, R, idx):
                 <div class="info-icon">i</div>
                 <div class="info-tooltip">
                   <strong>🥧 Ecosystem Composition</strong>
-                  Each slice shows the proportional share of the image per category. The centre number is your <b style="color:#00D4FF">Marine Health Score</b>. A large cyan slice = mostly healthy reef. Large white (Bleaching) or green (Algae) slices signal environmental stress that needs monitoring.
+                  {explain_donut(R)}
                 </div>
               </div>
             </div>
@@ -1051,7 +1224,7 @@ def render_report(uf, pil_image, R, idx):
           </div>
         </div>""", unsafe_allow_html=True)
     with col_gauge:
-        st.markdown("""
+        st.markdown(f"""
         <div class="chart-panel">
           <div class="chart-panel-header">
             <span class="chart-panel-title">🎯 &nbsp;Health Gauge</span>
@@ -1061,7 +1234,7 @@ def render_report(uf, pil_image, R, idx):
                 <div class="info-icon">i</div>
                 <div class="info-tooltip">
                   <strong>🎯 Health Gauge</strong>
-                  The needle points to your Marine Health Score on a 0–100 arc. <b style="color:#C0392B">Red (0–25)</b> = Critical degradation. <b style="color:#E67E22">Orange (25–50)</b> = Poor. <b style="color:#F4D03F">Yellow (50–75)</b> = Fair. <b style="color:#27AE60">Green (75–100)</b> = Good. Aim to push the needle into the green zone.
+                  {explain_gauge(R)}
                 </div>
               </div>
             </div>
@@ -1078,7 +1251,7 @@ def render_report(uf, pil_image, R, idx):
 
     # Recovery simulation
     section_head("04 · Marine Recovery Simulation")
-    st.markdown("""
+    st.markdown(f"""
     <div class="chart-panel">
       <div class="chart-panel-header">
             <span class="chart-panel-title">📈 &nbsp;Recovery Curves</span>
@@ -1088,7 +1261,7 @@ def render_report(uf, pil_image, R, idx):
                 <div class="info-icon">i</div>
                 <div class="info-tooltip">
                   <strong>📈 Marine Recovery Simulation</strong>
-                  Projects ecosystem recovery over 50 months. <b style="color:#8FBDD3">Dashed lines</b> = natural baseline recovery with no intervention. <b style="color:#8FBDD3">Solid lines</b> = boosted recovery path based on your Health Score. A bigger gap between dashed and solid means greater potential benefit from active reef restoration.
+                  {explain_recovery(R)}
                 </div>
               </div>
             </div>
@@ -1263,3 +1436,4 @@ st.markdown("""
   </div>
 </div>
 """, unsafe_allow_html=True)
+
